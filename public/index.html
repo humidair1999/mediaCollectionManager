@@ -71,6 +71,8 @@
 
             function testAPI() {
                 console.log('Welcome!  Fetching your information.... ');
+
+                console.log(FB.getUserID());
     
                 FB.api('/me', function(response) {
                     console.log(response);
@@ -81,11 +83,63 @@
 
         <fb:login-button show-faces="true" width="200" max-rows="1"></fb:login-button>
 
+        <br /><br /><br />
+
+        <button id="check-token">check/add user</button>
+
+        <form id="find-user-id">
+            <input type="text" placeholder="enter user id">
+
+            <input type="submit" value="find user">
+        </form>
+
         <button id="logout">log out</button>
 
         <script src="js/libs/jquery-1.9.1.min.js"></script>
 
         <script>
+            $("#find-user-id").on("submit", function(evt) {
+                var userId = $("#find-user-id").children("input[type=text]").val();
+
+                console.log(userId);
+
+                evt.preventDefault();
+
+                return $.ajax({
+                    url: "/users",
+                    method: "GET",
+                    data: {
+                        "id": userId
+                    },
+                    success: function() {
+
+                    },
+                    error: function() {
+
+                    }
+                });
+            });
+
+            $("#check-token").on("click", function() {
+                var userId = FB.getUserID(),
+                    accessToken = FB.getAccessToken();
+
+                return $.ajax({
+                    url: "/fakePost",
+                    method: "POST",
+                    data: {
+                        "user_id": userId,
+                        "access_token": accessToken
+                    },
+                    success: function() {
+
+                    },
+                    error: function() {
+
+                    }
+                });
+            });
+
             $("#logout").on("click", function() {
                 FB.logout(function(response) {
                     // Person is now logged out

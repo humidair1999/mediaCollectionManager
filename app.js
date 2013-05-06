@@ -1,9 +1,33 @@
 // module dependencies
 var express = require("express"),
     http = require("http"),
-    https = require("https");
+    https = require("https"),
+    querystring = require("querystring"),
+    when = require("when"),
+    mongoose = require("mongoose");
 
 var app = express();
+
+// TODO: better name for database; will also have to change connection string when
+//  moving to remote host
+mongoose.connect('mongodb://localhost/collectionTest1');
+
+var db = mongoose.connection;
+
+db.on("error", console.error.bind(console, "connection error:"));
+
+db.once("open", function callback () {
+    console.log("connected to db");
+});
+
+// TODO: define schema and models in another file?
+var userSchema = mongoose.Schema({
+    id: Number,
+    items: Array
+});
+
+// name of mongodb collection derived from plural form of model alias ("Users")
+var User = mongoose.model("User", userSchema);
 
 app.configure(function() {
     // http://expressjs.com/api.html#compress
@@ -33,6 +57,126 @@ app.all("/*", function(req, res, next) {
 });
 
 // routes
+app.post("/fakePost", express.bodyParser(), function(req, res) {
+    var clientUserId = req.body.user_id,
+        accessToken = querystring.stringify({
+            access_token: req.body.access_token
+        });
 
+    var verifyFacebookToken = function(accessToken) {
+        var options = {
+                hostname: "graph.facebook.com",
+                path: "/me?" + accessToken,
+                method: "GET"
+            },
+            deferred = when.defer();
+
+        var req = https.request(options, function(res) {
+            var data = "";
+
+            res.setEncoding("utf8");
+
+            res.on("data", function (chunk) {
+                return data += chunk;
+            });
+
+            res.on("end", function() {
+                var retrievedId = JSON.parse(data).id;
+
+                if (retrievedId) {
+                    deferred.resolve(retrievedId);
+                }
+                else {
+                    deferred.reject();
+                }
+            });
+        });
+
+        req.on("error", function(e) {
+            deferred.reject();
+        });
+
+        req.end();
+
+        return deferred.promise;
+    };
+
+    var verifyUserIdentity = function(facebookUserId, clientUserId) {
+        var deferred = when.defer();
+
+        if (parseInt(facebookUserId, 10) === parseInt(clientUserId, 10)) {
+            deferred.resolve();
+        }
+        else {
+            deferred.reject();
+        }
+
+        return deferred.promise;
+    };
+
+    // TODO: rewrite so I don't need the response.send/end repeated every time
+    // TODO: additional step for returning user from db or adding them if they don't
+    //  already exist
+    when(verifyFacebookToken(accessToken), function(facebookUserId) {
+        return verifyUserIdentity(facebookUserId, clientUserId);
+    }, function() {
+        console.log("facebook verification failed");
+        res.send("facebook verification failed");
+
+        res.end();
+    })
+    .then(function() {
+        var user = new User({
+            id: 666,
+            items: [12,13,14]
+        });
+
+        user.save(function (err, user) {
+            if (err) {
+                console.log("an error occurred while saving to db");
+            }
+        });
+
+        console.log("all succeeded");
+        res.send("all succeeded");
+
+        res.end();
+    }, function() {
+        console.log("user identity verification failed");
+        res.send("user identity verification failed");
+
+        res.end();
+    });
+
+});
+
+app.get("/users", function(req, res) {
+    var userId = req.query.id;
+
+    var retrieveUser = function(userId) {
+        var deferred = when.defer();
+
+        User.find({ id: userId }, function(err, results) {
+            if (err) {
+                deferred.reject();
+            }
+            else {
+                deferred.resolve(results);
+            }
+        });
+
+        return deferred.promise;
+    };
+
+    when(retrieveUser(userId), function(results) {
+        console.log("users found");
+        res.send(results);
+
+        res.end();
+    }, function() {
+        console.log("something went wrong");
+    });
+
+});
 
 app.listen(3000);
