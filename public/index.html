@@ -21,6 +21,10 @@
         <![endif]-->
 
         <div id="fb-root"></div>
+
+        <script>
+            console.log("should fire before all facebook shit");
+        </script>
         
         <script>
             // method is called after all.js script below has successfully loaded
@@ -34,7 +38,9 @@
                 });
 
                 FB.Event.subscribe("auth.authResponseChange", function(response) { 
-                    if (response.status === 'connected') {
+                    if (response.status === "connected") {
+                        // TODO: on successful login, somehow fire off Backbone app init, including check
+                        //  to see if user already exists in mongodb
                         testAPI();
                     }
                     else if (response.status === "not_authorized") {
@@ -81,7 +87,8 @@
             }
         </script>
 
-        <fb:login-button show-faces="true" width="200" max-rows="1"></fb:login-button>
+        <button id="login">log in</button>
+        <button id="logout">log out</button>
 
         <br /><br /><br />
 
@@ -93,11 +100,21 @@
             <input type="submit" value="find user">
         </form>
 
-        <button id="logout">log out</button>
-
         <script src="js/libs/jquery-1.9.1.min.js"></script>
 
         <script>
+            $("#login").on("click", function() {
+                FB.login(function(response) {
+                    // Person is now logged in
+                });
+            });
+
+            $("#logout").on("click", function() {
+                FB.logout(function(response) {
+                    // Person is now logged out
+                });
+            });
+
             $("#find-user-id").on("submit", function(evt) {
                 var userId = $("#find-user-id").children("input[type=text]").val();
 
@@ -137,12 +154,6 @@
                     error: function() {
 
                     }
-                });
-            });
-
-            $("#logout").on("click", function() {
-                FB.logout(function(response) {
-                    // Person is now logged out
                 });
             });
         </script>

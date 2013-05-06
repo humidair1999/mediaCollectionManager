@@ -105,7 +105,7 @@ app.post("/fakePost", express.bodyParser(), function(req, res) {
         var deferred = when.defer();
 
         if (parseInt(facebookUserId, 10) === parseInt(clientUserId, 10)) {
-            deferred.resolve();
+            deferred.resolve(facebookUserId);
         }
         else {
             deferred.reject();
@@ -125,15 +125,34 @@ app.post("/fakePost", express.bodyParser(), function(req, res) {
 
         res.end();
     })
-    .then(function() {
-        var user = new User({
-            id: 666,
-            items: [12,13,14]
-        });
+    .then(function(userId) {
+        console.log(userId);
 
-        user.save(function (err, user) {
+        User.find({ id: userId }, function(err, results) {
             if (err) {
-                console.log("an error occurred while saving to db");
+                console.log("error attempting to find user");
+            }
+            else {
+                console.log(results);
+
+                if (results.length > 0) {
+                    console.log("USER ALREADY EXISTS");
+                }
+                else {
+                    var user = new User({
+                        id: userId,
+                        items: [12,13,14]
+                    });
+
+                    user.save(function (err, user) {
+                        if (err) {
+                            console.log("an error occurred while saving to db");
+                        }
+                        else {
+                            console.log("saving new user succeeded");
+                        }
+                    });
+                }
             }
         });
 
@@ -170,7 +189,7 @@ app.get("/users", function(req, res) {
 
     when(retrieveUser(userId), function(results) {
         console.log("users found");
-        res.send(results);
+        res.json(results);
 
         res.end();
     }, function() {
