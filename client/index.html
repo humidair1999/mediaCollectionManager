@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>Media Collection Manager</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width">
+
+        <link rel="stylesheet" href="css/normalize.min.css">
+        <link rel="stylesheet" href="css/main.css">
+
+        <script src="js/libs/modernizr-2.6.2.min.js"></script>
+    </head>
+    <body>
+        <!--[if lt IE 7]>
+            <p class="chromeframe">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">activate Google Chrome Frame</a> to improve your experience.</p>
+        <![endif]-->
+
+        <div id="fb-root"></div>
+        
+        <script>
+            // method is called after all.js script below has successfully loaded
+            window.fbAsyncInit = function() {
+                FB.init({
+                    appId      : "619396928089440", // App ID
+                    channelUrl : "//localhost/mediaCollectionManager/channel.html", // Channel File
+                    status     : true, // check login status
+                    cookie     : true, // enable cookies to allow the server to access the session
+                    xfbml      : true  // parse XFBML
+                });
+
+                FB.Event.subscribe("auth.authResponseChange", function(response) { 
+                    if (response.status === 'connected') {
+                        testAPI();
+                    }
+                    else if (response.status === "not_authorized") {
+                        // TODO: don't instantly prompt to login; should display notification first
+                        //  with link to login
+                        FB.login();
+                    }
+                    else {
+                        // TODO: don't instantly prompt to login; should display notification first
+                        //  with link to login
+                        FB.login();
+                    }
+                });
+            };
+
+            // creates script tag referencing the Facebook JS API lib, as well as tracks whether
+            //  script has already been loaded or not
+            (function(d){
+                var js,
+                    id = 'facebook-jssdk',
+                    ref = d.getElementsByTagName('script')[0];
+            
+                if (d.getElementById(id)) {
+                    return;
+                }
+             
+                js = d.createElement('script');
+                js.id = id;
+                js.async = true;
+                js.src = "//connect.facebook.net/en_US/all.js";
+             
+                ref.parentNode.insertBefore(js, ref);
+            }(document));
+
+            function testAPI() {
+                console.log('Welcome!  Fetching your information.... ');
+    
+                FB.api('/me', function(response) {
+                    console.log(response);
+                    console.log('Good to see you, ' + response.name + '.');
+                });
+            }
+        </script>
+
+        <fb:login-button show-faces="true" width="200" max-rows="1"></fb:login-button>
+
+        <button id="logout">log out</button>
+
+        <script src="js/libs/jquery-1.9.1.min.js"></script>
+
+        <script>
+            $("#logout").on("click", function() {
+                FB.logout(function(response) {
+                    // Person is now logged out
+                });
+            });
+        </script>
+
+    </body>
+</html>
