@@ -22,141 +22,19 @@
 
         <div id="fb-root"></div>
 
-        <script>
-            console.log("should fire before all facebook shit");
-        </script>
-        
-        <script>
-            // method is called after all.js script below has successfully loaded
-            window.fbAsyncInit = function() {
-                FB.init({
-                    appId      : "619396928089440", // App ID
-                    channelUrl : "//localhost:3000/channel.html", // Channel File
-                    status     : true, // check login status
-                    cookie     : true, // enable cookies to allow the server to access the session
-                    xfbml      : true  // parse XFBML
-                });
+        <div style="border: 1px solid blue;" align="right">
+            <button id="login">log in</button>
+            <button id="logout" class="hidden">log out</button>
+        </div>
 
-                FB.Event.subscribe("auth.authResponseChange", function(response) { 
-                    if (response.status === "connected") {
-                        // TODO: on successful login, somehow fire off Backbone app init, including check
-                        //  to see if user already exists in mongodb
-                        testAPI();
-                    }
-                    else if (response.status === "not_authorized") {
-                        // TODO: don't instantly prompt to login; should display notification first
-                        //  with link to login
-                        FB.login();
-                    }
-                    else {
-                        // TODO: don't instantly prompt to login; should display notification first
-                        //  with link to login
-                        FB.login();
-                    }
-                });
-            };
-
-            // creates script tag referencing the Facebook JS API lib, as well as tracks whether
-            //  script has already been loaded or not
-            (function(d){
-                var js,
-                    id = 'facebook-jssdk',
-                    ref = d.getElementsByTagName('script')[0];
-            
-                if (d.getElementById(id)) {
-                    return;
-                }
-             
-                js = d.createElement('script');
-                js.id = id;
-                js.async = true;
-                js.src = "//connect.facebook.net/en_US/all.js";
-             
-                ref.parentNode.insertBefore(js, ref);
-            }(document));
-
-            function testAPI() {
-                console.log('Welcome!  Fetching your information.... ');
-
-                console.log(FB.getUserID());
-    
-                FB.api('/me', function(response) {
-                    console.log(response);
-                    console.log('Good to see you, ' + response.name + '.');
-                });
-            }
-        </script>
-
-        <button id="login">log in</button>
-        <button id="logout">log out</button>
-
-        <br /><br /><br />
-
-        <button id="check-token">check/add user</button>
-
-        <form id="find-user-id">
-            <input type="text" placeholder="enter user id">
-
-            <input type="submit" value="find user">
-        </form>
-
-        <script src="js/libs/jquery-1.9.1.min.js"></script>
+        <div id="container" style="border: 1px solid red;"></div>
 
         <script>
-            $("#login").on("click", function() {
-                FB.login(function(response) {
-                    // Person is now logged in
-                });
-            });
-
-            $("#logout").on("click", function() {
-                FB.logout(function(response) {
-                    // Person is now logged out
-                });
-            });
-
-            $("#find-user-id").on("submit", function(evt) {
-                var userId = $("#find-user-id").children("input[type=text]").val();
-
-                console.log(userId);
-
-                evt.preventDefault();
-
-                return $.ajax({
-                    url: "/users",
-                    method: "GET",
-                    data: {
-                        "id": userId
-                    },
-                    success: function() {
-
-                    },
-                    error: function() {
-
-                    }
-                });
-            });
-
-            $("#check-token").on("click", function() {
-                var userId = FB.getUserID(),
-                    accessToken = FB.getAccessToken();
-
-                return $.ajax({
-                    url: "/fakePost",
-                    method: "POST",
-                    data: {
-                        "user_id": userId,
-                        "access_token": accessToken
-                    },
-                    success: function() {
-
-                    },
-                    error: function() {
-
-                    }
-                });
-            });
+            var MCM = {};
         </script>
 
+        <script id="facebook-jssdk" src="//connect.facebook.net/en_US/all.js"></script>
+
+        <script src="js/libs/require.js" data-main="js/config"></script>
     </body>
 </html>
