@@ -15,7 +15,7 @@ function (  $,
 
     return Backbone.Router.extend({
         routes: {
-            "home": "showHome",
+            "": "showHome",
             "collections": "viewCollections"
         },
         homeItemView: null,
@@ -24,12 +24,14 @@ function (  $,
                 this.homeItemView.remove();
             }
 
-            console.log("called");
-
             if (MCM.user.isLoggedIn()) {
+                console.log("user logged in");
+
                 this.homeItemView = new HomeDashboardItemView();
             }
             else {
+                console.log("user not logged in");
+
                 this.homeItemView = new HomeSplashItemView();
             }
 

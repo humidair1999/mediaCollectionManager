@@ -14,10 +14,6 @@ function (  $,
             MCM.user.id = MCM.user.id ? MCM.user.id : FB.getUserID();
             MCM.user.accessToken = MCM.user.accessToken ? MCM.user.accessToken : FB.getAccessToken();
 
-            console.log(MCM.user);
-
-            MCM.app.router.navigate("#home", {trigger: true});
-
             $("#login").addClass("hidden");
             $("#logout").removeClass("hidden");
         };
@@ -47,9 +43,7 @@ function (  $,
             xfbml      : true  // parse XFBML
         });
 
-        FB.Event.subscribe("auth.authResponseChange", function(response) { 
-            console.log(response);
-
+        FB.getLoginStatus(function(response) {
             if (response.status === "connected") {
                 initializeApplication();
             }
@@ -59,23 +53,37 @@ function (  $,
             else {
                 endApplication();
             }
+
+            MCM.app.router = new Router();
+
+            Backbone.history.start();
+        });
+
+        FB.Event.subscribe("auth.authResponseChange", function(response) { 
+            if (response.status === "connected") {
+                console.log("connected");
+            }
+            else if (response.status === "not_authorized") {
+                console.log("disconnected");
+            }
+            else {
+                console.log("disconnected");
+            }
         });
 
         $("#login").on("click", function() {
             FB.login(function(response) {
-                // Person is now logged in
+                window.location.reload();
             });
         });
 
         $("#logout").on("click", function() {
             FB.logout(function(response) {
-                // Person is now logged out
+                window.location.reload();
             });
         });
 
-        MCM.app.router = new Router();
-
-        Backbone.history.start();
+        
     });
 
 });
